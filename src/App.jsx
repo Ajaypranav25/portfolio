@@ -63,6 +63,9 @@ export default function App() {
     return visible.length ? visible.reduce((a, b) => (b.z > a.z ? b : a)).key : null
   }, [wins])
 
+  // Dock clicks toggle like macOS: the front window minimises; a minimised or buried one comes forward
+  const onDockSelect = (type) => (type === focusedKey ? minimize(type) : openPanel(type))
+
   // Esc closes the front window
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && focusedKey && close(focusedKey)
@@ -117,7 +120,7 @@ export default function App() {
 
       <AnimatePresence>{shown.map(renderWindow)}</AnimatePresence>
 
-      <Dock openTypes={openTypes} onSelect={openPanel} compact={!isDesktop} />
+      <Dock openTypes={openTypes} onSelect={onDockSelect} compact={!isDesktop} />
       <Toast message={toast} />
       <Cursor />
     </>

@@ -17,8 +17,7 @@ export const profile = {
   skills: ['Python', 'JavaScript', 'Django', 'FastAPI', 'React', 'PyTorch', 'PostgreSQL'],
   links: {
     github: 'https://github.com/Ajaypranav25',
-    // TODO: replace with your LinkedIn profile URL
-    linkedin: 'https://www.linkedin.com/',
+    linkedin: 'https://www.linkedin.com/in/ajay-pranav-balakrishnan-95a992375/',
     instagram: 'https://instagram.com/ajay._.pranav',
   },
   resumeUrl: '/resume.pdf',
