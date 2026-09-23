@@ -1,3 +1,5 @@
+import { cloneElement } from 'react'
+
 // Tiny "app preview" artworks for each node, drawn in SVG so they stay crisp at any size.
 const arts = {
   algotrader: (
@@ -96,6 +98,12 @@ const arts = {
   ),
 }
 
-export default function Thumbnail({ kind, className = '' }) {
-  return <div className={`overflow-hidden ${className}`}>{arts[kind] ?? arts.readme}</div>
+// `cover` crops the art to fill non-matching boxes (e.g. square dock tiles) instead of letterboxing
+export default function Thumbnail({ kind, className = '', cover = false }) {
+  const art = arts[kind] ?? arts.readme
+  return (
+    <div className={`overflow-hidden ${className}`}>
+      {cover ? cloneElement(art, { preserveAspectRatio: 'xMidYMid slice' }) : art}
+    </div>
+  )
 }

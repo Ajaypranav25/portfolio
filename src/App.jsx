@@ -63,8 +63,13 @@ export default function App() {
     return visible.length ? visible.reduce((a, b) => (b.z > a.z ? b : a)).key : null
   }, [wins])
 
-  // Dock clicks toggle like macOS: the front window minimises; a minimised or buried one comes forward
-  const onDockSelect = (type) => (type === focusedKey ? minimize(type) : openPanel(type))
+  // Dock clicks toggle like macOS: the front window minimises; a minimised or buried one comes forward.
+  // Keys are panel types ('resume') or running project windows ('project:algotrader').
+  const onDockSelect = (key) => {
+    if (key === focusedKey) return minimize(key)
+    if (key.startsWith('project:')) return openProject(key.slice('project:'.length))
+    openPanel(key)
+  }
 
   // Esc closes the front window
   useEffect(() => {
@@ -109,6 +114,13 @@ export default function App() {
   // Phones get one sheet at a time: the front-most window
   const shown = isDesktop ? wins : wins.filter((w) => w.key === focusedKey)
   const openTypes = new Set(wins.map((w) => w.type))
+  // Open project windows show up in the dock as running apps, in the order they were opened
+  const running = wins
+    .filter((w) => w.type === 'project')
+    .map((w) => {
+      const p = projects.find((x) => x.id === w.id)
+      return { key: w.key, label: p.label, thumb: p.thumb }
+    })
 
   return (
     <>
@@ -120,7 +132,7 @@ export default function App() {
 
       <AnimatePresence>{shown.map(renderWindow)}</AnimatePresence>
 
-      <Dock openTypes={openTypes} onSelect={onDockSelect} compact={!isDesktop} />
+      <Dock openTypes={openTypes} running={running} onSelect={onDockSelect} compact={!isDesktop} />
       <Toast message={toast} />
       <Cursor />
     </>

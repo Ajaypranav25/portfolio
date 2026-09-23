@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { FileText, FolderOpen, Mail, Terminal } from 'lucide-react'
 import { GithubIcon, InstagramIcon, LinkedinIcon } from './BrandIcons'
+import Thumbnail from './Thumbnail'
 
 const BASE = 46
 const MAX = 70
@@ -54,7 +55,8 @@ export const dockItems = [
   },
 ]
 
-export default function Dock({ openTypes, onSelect, compact = false }) {
+// Pinned apps come from dockItems; `running` adds temporary icons for open project windows
+export default function Dock({ openTypes, running = [], onSelect, compact = false }) {
   const mouseX = useMotionValue(Infinity)
 
   return (
@@ -74,7 +76,7 @@ export default function Dock({ openTypes, onSelect, compact = false }) {
     >
       {dockItems.map((item, i) =>
         item === 'divider' ? (
-          <div key={`d${i}`} className={`mx-1 w-px self-stretch bg-white/15 ${compact ? 'my-1' : 'my-2'}`} />
+          <Divider key={`d${i}`} compact={compact} />
         ) : (
           <DockIcon
             key={item.id}
@@ -86,8 +88,37 @@ export default function Dock({ openTypes, onSelect, compact = false }) {
           />
         ),
       )}
+
+      <AnimatePresence initial={false}>
+        {running.length > 0 && (
+          <motion.div key="running-divider" {...popIn} className="flex self-stretch">
+            <Divider compact={compact} />
+          </motion.div>
+        )}
+        {running.map((app) => (
+          <motion.div key={app.key} {...popIn} className="shrink-0">
+            <DockIcon
+              item={{ id: app.key, label: app.label, thumb: app.thumb }}
+              mouseX={mouseX}
+              compact={compact}
+              active
+              onSelect={onSelect}
+            />
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </motion.nav>
   )
+}
+
+const popIn = {
+  initial: { opacity: 0, scale: 0.3, y: 24 },
+  animate: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 420, damping: 24 } },
+  exit: { opacity: 0, scale: 0.3, y: 24, transition: { duration: 0.18 } },
+}
+
+function Divider({ compact }) {
+  return <div className={`mx-1 w-px self-stretch bg-white/15 ${compact ? 'my-1' : 'my-2'}`} />
 }
 
 function DockIcon({ item, mouseX, compact, active, onSelect }) {
@@ -119,9 +150,13 @@ function DockIcon({ item, mouseX, compact, active, onSelect }) {
   const tile = (
     <>
       <div
-        className={`flex h-full w-full items-center justify-center rounded-[inherit] shadow-[inset_0_1px_0_rgba(255,255,255,.35),0_6px_16px_-6px_rgba(0,0,0,.7)] ${item.tile}`}
+        className={`flex h-full w-full items-center justify-center rounded-[inherit] shadow-[inset_0_1px_0_rgba(255,255,255,.35),0_6px_16px_-6px_rgba(0,0,0,.7)] ${item.tile ?? ''}`}
       >
-        <Icon className="h-[46%] w-[46%]" strokeWidth={1.8} />
+        {item.thumb ? (
+          <Thumbnail kind={item.thumb} cover className="h-full w-full rounded-[inherit]" />
+        ) : (
+          <Icon className="h-[46%] w-[46%]" strokeWidth={1.8} />
+        )}
       </div>
       <AnimatePresence>
         {hovered && !compact && (
